@@ -19,6 +19,7 @@ class Propiedad(models.Model):
     def __str__(self):
         return self.titulo
 
+        
 
 # Modelo de Reservas
 class Reserva(models.Model):
@@ -28,15 +29,15 @@ class Reserva(models.Model):
         ('Cancelada', 'cancelada')
     ]
 
-    propiedad = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
-    inquilino = models.ForeignKey(User, on_delete=models.CASCADE)
+    propiedad_id = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
+    cliente_id = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     estado = models.CharField(max_length=20, choices=ESTADOS)
     fecha_reserva = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Reserva de {self.inquilino} en {self.propiedad}"
+        return f"Reserva de {self.cliente_id} en {self.propiedad_id}"
 
 
 # Modelo de Valoraciones
@@ -276,3 +277,49 @@ class Reseña(models.Model):
 
     def __str__(self):
         return f"Reseña de {self.usuario} - {self.propiedad}"
+
+class DetallePropiedad(models.Model):
+    propiedad = models.OneToOneField(Propiedad, on_delete=models.CASCADE, related_name='detalle')
+    descripcion_detallada = models.TextField(blank=True, null=True)
+    imagenes = models.ManyToManyField('ImagenPropiedad', blank=True, related_name='detalles')
+    servicios = models.ManyToManyField(Servicio, blank=True, related_name='detalles')
+    valoraciones = models.ManyToManyField(Valoracion, blank=True, related_name='detalles')
+
+    def obtener_detalle_completo(self):
+        """
+        Método para obtener todos los datos relacionados con la propiedad.
+        """
+        return {
+            'propiedad': {
+                'titulo': self.propiedad.titulo,
+                'descripcion': self.propiedad.descripcion,
+                'direccion': self.propiedad.direccion,
+                'ciudad': self.propiedad.ciudad,
+                'estado': self.propiedad.estado,
+                'pais': self.propiedad.pais,
+                'precio': self.propiedad.precio,
+                'fecha_publicacion': self.propiedad.fecha_publicacion,
+            },
+            'descripcion_detallada': self.descripcion_detallada,
+            'imagenes': [imagen.url for imagen in self.imagenes.all()],
+            'servicios': [servicio.nombre for servicio in self.servicios.all()],
+            'valoraciones': [{
+                'usuario': valoracion.usuario.username,
+                'calificacion': valoracion.calificacion,
+                'comentario': valoracion.comentario,
+                'fecha': valoracion.fecha
+            } for valoracion in self.valoraciones.all()],
+        }
+
+    def __str__(self):
+        return f"Detalle de {self.propiedad.titulo}"
+
+
+# Modelo de Imagenes de Propiedades
+class ImagenPropiedad(models.Model):
+    propiedad = models.ForeignKey(Propiedad, on_delete=models.CASCADE, related_name='imagenes')
+    url = models.URLField()
+    descripcion = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Imagen de {self.propiedad.titulo}"

@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from .views import DetallePropiedadAPIView
 
 urlpatterns = [
     path('users/', views.UserListCreate.as_view(), name='user-list-create'),  
@@ -12,9 +13,12 @@ urlpatterns = [
 
     path('register/', RegisterView.as_view(), name='register'),
 
-    
     path('propiedad/', views.PropiedadListCreate.as_view(), name='propiedad-list'), 
     path('propiedad/<int:pk>/', views.PropiedadDetail.as_view(), name='propiedad-detail'),
+
+     # Endpoint para obtener, crear o actualizar DetallePropiedad
+    path('api/detalle-propiedad/<int:pk>/', DetallePropiedadAPIView.as_view(), name='detalle-propiedad'),
+    path('api/detalle-propiedad/', DetallePropiedadAPIView.as_view(), name='crear-detalle-propiedad'),
    
     path('reserva/', views.ReservaListCreate.as_view(), name='reserva-list'), 
     path('reserva/<int:pk>/', views.ReservaDetail.as_view(), name='reserva-detail'),

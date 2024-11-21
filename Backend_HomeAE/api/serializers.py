@@ -5,8 +5,11 @@ from .models import (
     Feedback, Servicio, PropiedadServicio, Ubicacion, Contrato, Favorito,
     Mantenimiento, Reseña
 )
+from .models import DetallePropiedad, ImagenPropiedad, Propiedad, Servicio, Valoracion
 
 from django.contrib.auth.models import User, Group
+
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     # Campo 'role' se define como solo escritura
@@ -90,11 +93,91 @@ class PropiedadSerializer(serializers.ModelSerializer):
         model = Propiedad
         fields = '__all__'
 
+# Serializer para el modelo ImagenPropiedad
+class ImagenPropiedadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagenPropiedad
+        fields = ['id', 'url', 'descripcion', 'propiedad']
+
+    # Validaciones
+    def validate_url(self, value):
+        if not value.startswith('http'):
+            raise serializers.ValidationError("La URL de la imagen debe ser válida y comenzar con 'http' o 'https'.")
+        return value
+
+    def validate_descripcion(self, value):
+        if value and len(value) > 255:
+            raise serializers.ValidationError("La descripción no debe superar los 255 caracteres.")
+        return value
+
+
+# Serializer para DetallePropiedad
+class DetallePropiedadSerializer(serializers.ModelSerializer):
+    # Serializadores anidados
+    imagenes = ImagenPropiedadSerializer(many=True, required=False)
+    servicios = serializers.StringRelatedField(many=True)  # Devuelve los nombres de los servicios
+    valoraciones = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DetallePropiedad
+        fields = [
+            'id',
+            'propiedad',
+            'descripcion_detallada',
+            'imagenes',
+            'servicios',
+            'valoraciones',
+        ]
+
+    # Validaciones
+    def validate_descripcion_detallada(self, value):
+        if value and len(value) < 10:
+            raise serializers.ValidationError("La descripción detallada debe tener al menos 10 caracteres.")
+        return value
+
+    # Método para obtener valoraciones personalizadas
+    def get_valoraciones(self, obj):
+        valoraciones = obj.valoraciones.all()
+        return [
+            {
+                'usuario': valoracion.usuario.username,
+                'calificacion': valoracion.calificacion,
+                'comentario': valoracion.comentario,
+                'fecha': valoracion.fecha.strftime('%Y-%m-%d %H:%M:%S'),
+            }
+            for valoracion in valoraciones
+        ]
+
+    # Crear o actualizar los datos de imagenes relacionadas
+    def create(self, validated_data):
+        imagenes_data = validated_data.pop('imagenes', [])
+        detalle = DetallePropiedad.objects.create(**validated_data)
+        for imagen_data in imagenes_data:
+            ImagenPropiedad.objects.create(detalles=detalle, **imagen_data)
+        return detalle
+
+    def update(self, instance, validated_data):
+        imagenes_data = validated_data.pop('imagenes', [])
+        instance.descripcion_detallada = validated_data.get('descripcion_detallada', instance.descripcion_detallada)
+        instance.save()
+
+        # Actualizar las imágenes relacionadas
+        for imagen_data in imagenes_data:
+            imagen_id = imagen_data.get('id')
+            if imagen_id:
+                imagen = ImagenPropiedad.objects.get(id=imagen_id, detalles=instance)
+                imagen.url = imagen_data.get('url', imagen.url)
+                imagen.descripcion = imagen_data.get('descripcion', imagen.descripcion)
+                imagen.save()
+            else:
+                ImagenPropiedad.objects.create(detalles=instance, **imagen_data)
+        return instance        
+
 
 # Serializer de Reserva
 class ReservaSerializer(serializers.ModelSerializer):
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
-    inquilino = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    cliente_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Reserva
@@ -284,3 +367,5 @@ class ReseñaSerializer(serializers.ModelSerializer):
         if value < 1 or value > 5:
             raise serializers.ValidationError("La calificación debe estar entre 1 y 5.")
         return value
+    
+    

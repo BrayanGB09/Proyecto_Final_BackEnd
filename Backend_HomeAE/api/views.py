@@ -17,8 +17,6 @@ from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
-from .models import DetallePropiedad
-from .serializers import DetallePropiedadSerializer
 
 
 class RegisterView(APIView):
@@ -70,34 +68,7 @@ class PropiedadListCreate(generics.ListCreateAPIView):
 class PropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Propiedad.objects.all()
     serializer_class = PropiedadSerializer
-
-class DetallePropiedadAPIView(APIView):
-    def get(self, request, pk):
-        try:
-            detalle = DetallePropiedad.objects.get(pk=pk)
-            serializer = DetallePropiedadSerializer(detalle)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except DetallePropiedad.DoesNotExist:
-            return Response({'error': 'Detalle no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-
-    def post(self, request):
-        serializer = DetallePropiedadSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, pk):
-        try:
-            detalle = DetallePropiedad.objects.get(pk=pk)
-            serializer = DetallePropiedadSerializer(detalle, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except DetallePropiedad.DoesNotExist:
-            return Response({'error': 'Detalle no encontrado'}, status=status.HTTP_404_NOT_FOUND)    
-
+    
 
 class ReservaListCreate(generics.ListCreateAPIView):
     queryset = Reserva.objects.all()

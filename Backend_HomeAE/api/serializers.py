@@ -3,12 +3,9 @@ from .models import (
     Propiedad, Reserva, Valoracion, MetodoPago, Notificacion, FAQ,
     Newsletter, Oferta, Actividad, VerificacionIdentidad, HistorialActividad,
     Feedback, Servicio, PropiedadServicio, Ubicacion, Contrato, Favorito,
-    Mantenimiento, Reseña
+    Mantenimiento, Reseña, ImagenPropiedad
 )
-from .models import DetallePropiedad, ImagenPropiedad, Propiedad, Servicio, Valoracion
-
 from django.contrib.auth.models import User, Group
-
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -87,7 +84,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 # Serializer de Propiedad
 class PropiedadSerializer(serializers.ModelSerializer):
-    propietario = UserSerializer(read_only=True)
+    propietario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Propiedad
@@ -108,70 +105,7 @@ class ImagenPropiedadSerializer(serializers.ModelSerializer):
     def validate_descripcion(self, value):
         if value and len(value) > 255:
             raise serializers.ValidationError("La descripción no debe superar los 255 caracteres.")
-        return value
-
-
-# Serializer para DetallePropiedad
-class DetallePropiedadSerializer(serializers.ModelSerializer):
-    # Serializadores anidados
-    imagenes = ImagenPropiedadSerializer(many=True, required=False)
-    servicios = serializers.StringRelatedField(many=True)  # Devuelve los nombres de los servicios
-    valoraciones = serializers.SerializerMethodField()
-
-    class Meta:
-        model = DetallePropiedad
-        fields = [
-            'id',
-            'propiedad',
-            'descripcion_detallada',
-            'imagenes',
-            'servicios',
-            'valoraciones',
-        ]
-
-    # Validaciones
-    def validate_descripcion_detallada(self, value):
-        if value and len(value) < 10:
-            raise serializers.ValidationError("La descripción detallada debe tener al menos 10 caracteres.")
-        return value
-
-    # Método para obtener valoraciones personalizadas
-    def get_valoraciones(self, obj):
-        valoraciones = obj.valoraciones.all()
-        return [
-            {
-                'usuario': valoracion.usuario.username,
-                'calificacion': valoracion.calificacion,
-                'comentario': valoracion.comentario,
-                'fecha': valoracion.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-            }
-            for valoracion in valoraciones
-        ]
-
-    # Crear o actualizar los datos de imagenes relacionadas
-    def create(self, validated_data):
-        imagenes_data = validated_data.pop('imagenes', [])
-        detalle = DetallePropiedad.objects.create(**validated_data)
-        for imagen_data in imagenes_data:
-            ImagenPropiedad.objects.create(detalles=detalle, **imagen_data)
-        return detalle
-
-    def update(self, instance, validated_data):
-        imagenes_data = validated_data.pop('imagenes', [])
-        instance.descripcion_detallada = validated_data.get('descripcion_detallada', instance.descripcion_detallada)
-        instance.save()
-
-        # Actualizar las imágenes relacionadas
-        for imagen_data in imagenes_data:
-            imagen_id = imagen_data.get('id')
-            if imagen_id:
-                imagen = ImagenPropiedad.objects.get(id=imagen_id, detalles=instance)
-                imagen.url = imagen_data.get('url', imagen.url)
-                imagen.descripcion = imagen_data.get('descripcion', imagen.descripcion)
-                imagen.save()
-            else:
-                ImagenPropiedad.objects.create(detalles=instance, **imagen_data)
-        return instance        
+        return value    
 
 
 # Serializer de Reserva
@@ -191,8 +125,8 @@ class ReservaSerializer(serializers.ModelSerializer):
 
 # Serializer de Valoración
 class ValoracionSerializer(serializers.ModelSerializer):
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
-    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Valoracion
@@ -206,21 +140,21 @@ class ValoracionSerializer(serializers.ModelSerializer):
 
 # Serializer de Método de Pago
 class MetodoPagoSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = MetodoPago
         fields = '__all__'
 
     def validate_estado(self, value):
-        if value not in ['activo', 'inactivo']:
+        if value not in ['Activo', 'Inactivo']:
             raise serializers.ValidationError("Estado inválido.")
         return value
 
 
 # Serializer de Notificación
 class NotificacionSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Notificacion
@@ -262,7 +196,8 @@ class ActividadSerializer(serializers.ModelSerializer):
 
 # Serializer de Verificación de Identidad
 class VerificacionIdentidadSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
 
     class Meta:
         model = VerificacionIdentidad
@@ -271,7 +206,8 @@ class VerificacionIdentidadSerializer(serializers.ModelSerializer):
 
 # Serializer de Historial de Actividad
 class HistorialActividadSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
 
     class Meta:
         model = HistorialActividad
@@ -280,7 +216,8 @@ class HistorialActividadSerializer(serializers.ModelSerializer):
 
 # Serializer de Feedback
 class FeedbackSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
 
     class Meta:
         model = Feedback
@@ -301,8 +238,8 @@ class ServicioSerializer(serializers.ModelSerializer):
 
 # Serializer de PropiedadServicio
 class PropiedadServicioSerializer(serializers.ModelSerializer):
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
-    servicio = serializers.PrimaryKeyRelatedField(queryset=Servicio.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    servicio_id = serializers.PrimaryKeyRelatedField(queryset=Servicio.objects.all())
 
     class Meta:
         model = PropiedadServicio
@@ -311,7 +248,7 @@ class PropiedadServicioSerializer(serializers.ModelSerializer):
 
 # Serializer de Ubicación
 class UbicacionSerializer(serializers.ModelSerializer):
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
 
     class Meta:
         model = Ubicacion
@@ -332,8 +269,8 @@ class ContratoSerializer(serializers.ModelSerializer):
 
 # Serializer de Favorito
 class FavoritoSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
 
     class Meta:
         model = Favorito
@@ -342,7 +279,7 @@ class FavoritoSerializer(serializers.ModelSerializer):
 
 # Serializer de Mantenimiento
 class MantenimientoSerializer(serializers.ModelSerializer):
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
 
     class Meta:
         model = Mantenimiento
@@ -356,8 +293,8 @@ class MantenimientoSerializer(serializers.ModelSerializer):
 
 # Serializer de Reseña
 class ReseñaSerializer(serializers.ModelSerializer):
-    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    propiedad = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    propiedad_id = serializers.PrimaryKeyRelatedField(queryset=Propiedad.objects.all())
 
     class Meta:
         model = Reseña

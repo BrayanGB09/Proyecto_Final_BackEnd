@@ -5,7 +5,6 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import DetallePropiedadAPIView
 
 urlpatterns = [
     path('users/', views.UserListCreate.as_view(), name='user-list-create'),  
@@ -15,10 +14,6 @@ urlpatterns = [
 
     path('propiedad/', views.PropiedadListCreate.as_view(), name='propiedad-list'), 
     path('propiedad/<int:pk>/', views.PropiedadDetail.as_view(), name='propiedad-detail'),
-
-     # Endpoint para obtener, crear o actualizar DetallePropiedad
-    path('api/detalle-propiedad/<int:pk>/', DetallePropiedadAPIView.as_view(), name='detalle-propiedad'),
-    path('api/detalle-propiedad/', DetallePropiedadAPIView.as_view(), name='crear-detalle-propiedad'),
    
     path('reserva/', views.ReservaListCreate.as_view(), name='reserva-list'), 
     path('reserva/<int:pk>/', views.ReservaDetail.as_view(), name='reserva-detail'),
@@ -50,8 +45,8 @@ urlpatterns = [
     path('historialactividad/', views.HistorialActividadListCreate.as_view(), name='historialactividad-list'), 
     path('historialactividad/<int:pk>/', views.HistorialActividadDetail.as_view(), name='historialactividad-detail'),
    
-    path('meedback/', views.FeedbackListCreate.as_view(), name='meedback-list'), 
-    path('meedback/<int:pk>/', views.FeedbackDetail.as_view(), name='meedback-detail'),
+    path('feedback/', views.FeedbackListCreate.as_view(), name='feedback-list'), 
+    path('feedback/<int:pk>/', views.FeedbackDetail.as_view(), name='feedback-detail'),
    
     path('servicio/', views.ServicioListCreate.as_view(), name='servicio-list'), 
     path('servicio/<int:pk>/', views.ServicioDetail.as_view(), name='servicio-detail'),
@@ -64,6 +59,9 @@ urlpatterns = [
     
     path('contrato/', views.ContratoListCreate.as_view(), name='contrato-list'), 
     path('contrato/<int:pk>/', views.ContratoDetail.as_view(), name='contrato-detail'),
+    
+    path('favorito/', views.FavoritoListCreate.as_view(), name='favorito-list'), 
+    path('favorito/<int:pk>/', views.FavoritoDetail.as_view(), name='favorito-detail'),
     
     path('mantenimiento/', views.MantenimientoListCreate.as_view(), name='mantenimiento-list'), 
     path('mantenimiento/<int:pk>/', views.MantenimientoDetail.as_view(), name='mantenimiento-detail'),

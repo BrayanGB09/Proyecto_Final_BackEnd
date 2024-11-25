@@ -69,6 +69,12 @@ urlpatterns = [
     path('reseña/', views.ReseñaListCreate.as_view(), name='reseña-list'), 
     path('reseña/<int:pk>/', views.ReseñaDetail.as_view(), name='reseña-detail'),
     
+    path('imagenpropiedad/', views.ImagenPropiedadListCreate.as_view(), name='imagenpropiedad-list'), 
+    path('imagenpropiedad/<int:pk>/', views.ImagenPropiedadDetail.as_view(), name='imagenpropiedad-detail'),
+    
+    path('detallepropiedad/', views.DetallePropiedadListCreate.as_view(), name='detallepropiedad-list'), 
+    path('detallepropiedad/<int:pk>/', views.DetallePropiedadDetail.as_view(), name='detallepropiedad-detail'),
+    
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

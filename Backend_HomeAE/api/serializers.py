@@ -3,7 +3,7 @@ from .models import (
     Propiedad, Reserva, Valoracion, MetodoPago, Notificacion, FAQ,
     Newsletter, Oferta, Actividad, VerificacionIdentidad, HistorialActividad,
     Feedback, Servicio, PropiedadServicio, Ubicacion, Contrato, Favorito,
-    Mantenimiento, Reseña, ImagenPropiedad
+    Mantenimiento, Reseña, ImagenPropiedad, DetallePropiedad
 )
 from django.contrib.auth.models import User, Group
 
@@ -85,7 +85,6 @@ class UserSerializer(serializers.ModelSerializer):
 # Serializer de Propiedad
 class PropiedadSerializer(serializers.ModelSerializer):
     propietario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-
     class Meta:
         model = Propiedad
         fields = '__all__'
@@ -306,3 +305,48 @@ class ReseñaSerializer(serializers.ModelSerializer):
         return value
     
     
+# Serializer de ImagenPropiedad
+class ImagenPropiedadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagenPropiedad
+        fields = '__all__'
+
+    def validate_url(self, value):
+        if not value.startswith(('http://', 'https://')):
+            raise serializers.ValidationError("La URL debe ser válida y comenzar con http:// o https://.")
+        return value
+
+    def validate_descripcion(self, value):
+        if value and len(value) > 255:
+            raise serializers.ValidationError("La descripción no puede exceder los 255 caracteres.")
+        return value
+   
+
+# Serializer de DetallePropiedad
+class DetallePropiedadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetallePropiedad
+        fields = '__all__'
+    
+    def validate_superficie(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("La superficie debe ser mayor a 0.")
+        return value
+
+    def validate_numero_habitaciones(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El número de habitaciones no puede ser negativo.")
+        return value
+
+    def validate_numero_banos(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El número de baños no puede ser negativo.")
+        return value
+
+    def validate(self, data):
+        # Ejemplo: Validar que las habitaciones sean suficientes para baños.
+        if data['numero_banos'] > data['numero_habitaciones']:
+            raise serializers.ValidationError(
+                "El número de baños no puede exceder el número de habitaciones."
+            )
+        return data

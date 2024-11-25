@@ -4,7 +4,7 @@ from .models import (
     Propiedad, Reserva, Valoracion, MetodoPago, Notificacion, 
     FAQ, Newsletter, Oferta, Actividad, VerificacionIdentidad,
     HistorialActividad, Feedback, Servicio, PropiedadServicio,
-    Ubicacion, Contrato, Favorito, Mantenimiento, Reseña)
+    Ubicacion, Contrato, Favorito, Mantenimiento, Reseña, ImagenPropiedad, DetallePropiedad)
 from .serializers import (
     UserRegisterSerializer,PropiedadSerializer, ReservaSerializer, 
     ValoracionSerializer, MetodoPagoSerializer, NotificacionSerializer, 
@@ -12,7 +12,7 @@ from .serializers import (
     ActividadSerializer, VerificacionIdentidadSerializer, 
     HistorialActividadSerializer, FeedbackSerializer, ServicioSerializer, 
     PropiedadServicioSerializer, UbicacionSerializer, ContratoSerializer, 
-    FavoritoSerializer, MantenimientoSerializer, ReseñaSerializer)
+    FavoritoSerializer, MantenimientoSerializer, ReseñaSerializer, ImagenPropiedadSerializer, DetallePropiedadSerializer)
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User
 from rest_framework.response import Response
@@ -64,10 +64,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
 class PropiedadListCreate(generics.ListCreateAPIView):
     queryset = Propiedad.objects.all()
     serializer_class = PropiedadSerializer
+    permission_classes = [IsAuthenticated]
 
 class PropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Propiedad.objects.all()
     serializer_class = PropiedadSerializer
+    permission_classes = [IsAuthenticated]
     
 
 class ReservaListCreate(generics.ListCreateAPIView):
@@ -225,7 +227,6 @@ class MantenimientoDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]  # Solo los usuarios autenticados pueden acceder
 
     
-    
 class ReseñaListCreate(generics.ListCreateAPIView):
     queryset = Reseña.objects.all()
     serializer_class = ReseñaSerializer
@@ -233,3 +234,21 @@ class ReseñaListCreate(generics.ListCreateAPIView):
 class ReseñaDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reseña.objects.all()
     serializer_class = ReseñaSerializer
+    
+    
+class ImagenPropiedadListCreate(generics.ListCreateAPIView):
+    queryset = ImagenPropiedad.objects.all()
+    serializer_class = ImagenPropiedadSerializer
+
+class ImagenPropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ImagenPropiedad.objects.all()
+    serializer_class = ImagenPropiedadSerializer
+    
+    
+class DetallePropiedadListCreate(generics.ListCreateAPIView):
+    queryset = DetallePropiedad.objects.all()
+    serializer_class = DetallePropiedadSerializer
+
+class DetallePropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DetallePropiedad.objects.all()
+    serializer_class = DetallePropiedadSerializer

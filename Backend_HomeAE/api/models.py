@@ -12,15 +12,13 @@ class Propiedad(models.Model):
     ciudad = models.CharField(max_length=100)
     estado = models.CharField(max_length=100)
     pais = models.CharField(max_length=100)
-    imagen_url = models.URLField(blank=True, null=True)
+    imagen_url = models.ImageField(upload_to='propiedades/', blank=True, null=True)
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.titulo
     
     
-
-
 # Modelo de Reservas
 class Reserva(models.Model):
     ESTADOS = [

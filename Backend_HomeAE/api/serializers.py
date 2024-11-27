@@ -15,7 +15,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # Campos que se incluirán en la serialización
-        fields = ('Usuario', 'Nombre', 'Apellidos', 'Correo', 'Contraseña', 'rol')
+        fields = ('id','username', 'first_name', 'last_name', 'email', 'password', 'rol')
         
     def validate_password(self, value):
         # Validación para asegurar que la contraseña tenga al menos 6 caracteres
@@ -29,7 +29,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         # Crear una instancia de User con los datos validados
         user = User(**validated_data)
         # Establecer la contraseña encriptada
-        user.set_password(validated_data['Contraseña'])
+        user.set_password(validated_data['password'])
         # Guardar el usuario en la base de datos
         user.save()
 
@@ -45,14 +45,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         # Actualizar los campos del usuario con los datos proporcionados
-        instance.username = validated_data.get('Usuario', instance.username)
-        instance.first_name = validated_data.get('Nombre', instance.first_name)
-        instance.last_name = validated_data.get('Apellidos', instance.last_name)
-        instance.email = validated_data.get('Correo', instance.email)
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
 
         # Si se proporciona una nueva contraseña, establecerla y guardar el usuario
-        if 'Contraseña' in validated_data:
-            instance.set_password(validated_data['Contraseña'])
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
             instance.save()  
     
         return instance 
@@ -61,7 +61,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password']
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -79,15 +79,20 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'Usuario', 'Correo']
+        fields = ['id', 'username', 'email']
 
 
 # Serializer de Propiedad
 class PropiedadSerializer(serializers.ModelSerializer):
-    propietario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = Propiedad
-        fields = '__all__'
+        fields = ['titulo', 'descripcion', 'precio', 'direccion', 'ciudad', 'estado', 'pais', 'imagen', 'propietario_id_id']
+
+    def propietario_id_id(self, value):
+        # Validación personalizada para asegurarte de que el propietario existe
+        if not value:
+            raise serializers.ValidationError("El propietario no puede ser nulo.")
+        return value
 
 # Serializer para el modelo ImagenPropiedad
 class ImagenPropiedadSerializer(serializers.ModelSerializer):

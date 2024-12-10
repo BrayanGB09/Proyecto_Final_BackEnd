@@ -86,7 +86,7 @@ class UserSerializer(serializers.ModelSerializer):
 class PropiedadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Propiedad
-        fields = ['titulo', 'descripcion', 'precio', 'direccion', 'ciudad', 'estado', 'pais', 'imagen', 'propietario_id_id']
+        fields = ['id','titulo', 'descripcion', 'precio', 'direccion', 'ciudad', 'estado', 'pais', 'imagen', 'propietario_id_id']
 
     def propietario_id_id(self, value):
         # Validación personalizada para asegurarte de que el propietario existe

@@ -64,7 +64,6 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
 class PropiedadListCreate(generics.ListCreateAPIView):
     queryset = Propiedad.objects.all()
     serializer_class = PropiedadSerializer
-    permission_classes = [IsAuthenticated]
 
 class PropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Propiedad.objects.all()
@@ -75,10 +74,12 @@ class PropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
 class ReservaListCreate(generics.ListCreateAPIView):
     queryset = Reserva.objects.all()
     serializer_class = ReservaSerializer
+    permission_classes = [IsAuthenticated]
 
 class ReservaDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reserva.objects.all()
     serializer_class = ReservaSerializer
+    permission_classes = [IsAuthenticated]
     
     
 class ValoracionListCreate(generics.ListCreateAPIView):
@@ -245,6 +246,7 @@ class ImagenPropiedadDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ImagenPropiedadSerializer
     
     
+#Vista de detalle de propiedad    
 class DetallePropiedadListCreate(generics.ListCreateAPIView):
     queryset = DetallePropiedad.objects.all()
     serializer_class = DetallePropiedadSerializer

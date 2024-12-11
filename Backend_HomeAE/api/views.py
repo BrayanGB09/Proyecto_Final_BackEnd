@@ -13,7 +13,7 @@ from .serializers import (
     HistorialActividadSerializer, FeedbackSerializer, ServicioSerializer, 
     PropiedadServicioSerializer, UbicacionSerializer, ContratoSerializer, 
     FavoritoSerializer, MantenimientoSerializer, ReseñaSerializer, ImagenPropiedadSerializer, DetallePropiedadSerializer)
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import IsAuthenticated, BasePermission, IsAdminUser
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
@@ -139,10 +139,14 @@ class OfertaDetail(generics.RetrieveUpdateDestroyAPIView):
 class ActividadListCreate(generics.ListCreateAPIView):
     queryset = Actividad.objects.all()
     serializer_class = ActividadSerializer
+    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
 class ActividadDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Actividad.objects.all()
     serializer_class = ActividadSerializer
+    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     
     
 class VerificacionIdentidadListCreate(generics.ListCreateAPIView):

@@ -172,7 +172,7 @@ class HistorialActividad(models.Model):
 # Modelo de Feedback sobre la Plataforma
 class Feedback(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateField(auto_now_add=True)
     comentario = models.TextField()
     calificacion = models.IntegerField()
 

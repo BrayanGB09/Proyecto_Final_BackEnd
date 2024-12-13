@@ -174,11 +174,23 @@ class Feedback(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateField(auto_now_add=True)
     comentario = models.TextField()
-    calificacion = models.IntegerField()
+    calificacion = models.IntegerField(
+        choices=[
+            (1, '⭐ 1 estrella'),
+            (2, '⭐⭐ 2 estrellas'),
+            (3, '⭐⭐⭐ 3 estrellas'),
+            (4, '⭐⭐⭐⭐ 4 estrellas'),
+            (5, '⭐⭐⭐⭐⭐ 5 estrellas'),
+        ],
+        help_text="Selecciona una calificación entre 1 (peor) y 5 (mejor)"
+    )
 
     class Meta:
         constraints = [
-            models.CheckConstraint(check=models.Q(calificacion__gte=1, calificacion__lte=5), name="calificacion_range_feedback")
+            models.CheckConstraint(
+                check=models.Q(calificacion__gte=1, calificacion__lte=5),
+                name="calificacion_range_feedback"
+            )
         ]
 
     def __str__(self):

@@ -30,8 +30,9 @@ class Reserva(models.Model):
     cliente_id = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    huespedes = models.IntegerField(default=1)
     estado = models.CharField(max_length=20, choices=ESTADOS)
-    fecha_reserva = models.DateTimeField(auto_now_add=True)
+    fecha_reserva = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Reserva de {self.cliente_id} en {self.propiedad_id}"
@@ -41,7 +42,7 @@ class Reserva(models.Model):
 class Valoracion(models.Model):
     propiedad_id = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateField(auto_now_add=True)
     calificacion = models.IntegerField()
     comentario = models.TextField(blank=True, null=True)
 
@@ -85,7 +86,7 @@ class Notificacion(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     mensaje = models.TextField()
     estado = models.CharField(max_length=20, choices=ESTADOS, default='no leído')
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Notificación para {self.usuario_id}"
@@ -104,7 +105,7 @@ class FAQ(models.Model):
 class Newsletter(models.Model):
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    fecha_inscripcion = models.DateTimeField(auto_now_add=True)
+    fecha_inscripcion = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Newsletter: {self.email}"
@@ -152,7 +153,7 @@ class VerificacionIdentidad(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     tipo_verificacion = models.CharField(max_length=30, choices=TIPOS)
     estado = models.CharField(max_length=20, choices=ESTADOS)
-    fecha_verificacion = models.DateTimeField(auto_now_add=True)
+    fecha_verificacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.tipo_verificacion} de {self.usuario_id}"
@@ -162,7 +163,7 @@ class VerificacionIdentidad(models.Model):
 class HistorialActividad(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     actividad = models.CharField(max_length=255)
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateField(auto_now_add=True)
     descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -232,7 +233,7 @@ class Ubicacion(models.Model):
 
 # Modelo de Contratos
 class Contrato(models.Model):
-    fecha_firma = models.DateTimeField(auto_now_add=True)
+    fecha_firma = models.DateField(auto_now_add=True)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     documento = models.BinaryField()
@@ -245,7 +246,7 @@ class Contrato(models.Model):
 class Favorito(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     propiedad_id = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
-    fecha_agregado = models.DateTimeField(auto_now_add=True)
+    fecha_agregado = models.DateField(auto_now_add=True)
 
     class Meta:
         unique_together = ('usuario_id', 'propiedad_id')
@@ -262,8 +263,8 @@ class Mantenimiento(models.Model):
     propiedad_id = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
     descripcion = models.TextField()
     estado = models.CharField(max_length=20, choices=ESTADOS)
-    fecha_solicitud = models.DateTimeField(auto_now_add=True)
-    fecha_completado = models.DateTimeField(blank=True, null=True)
+    fecha_solicitud = models.DateField(auto_now_add=True)
+    fecha_completado = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return f"Mantenimiento {self.estado} - {self.propiedad_id}"
@@ -273,13 +274,25 @@ class Mantenimiento(models.Model):
 class Reseña(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     propiedad_id = models.ForeignKey(Propiedad, on_delete=models.CASCADE)
-    calificacion = models.IntegerField()
     comentario = models.TextField(blank=True, null=True)
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateField(auto_now_add=True)
+    calificacion = models.IntegerField(
+        choices=[
+            (1, '⭐ 1 estrella'),
+            (2, '⭐⭐ 2 estrellas'),
+            (3, '⭐⭐⭐ 3 estrellas'),
+            (4, '⭐⭐⭐⭐ 4 estrellas'),
+            (5, '⭐⭐⭐⭐⭐ 5 estrellas'),
+        ],
+        help_text="Selecciona una calificación entre 1 (peor) y 5 (mejor)"
+    )
 
     class Meta:
         constraints = [
-            models.CheckConstraint(check=models.Q(calificacion__gte=1, calificacion__lte=5), name="calificacion_range_reseña")
+            models.CheckConstraint(
+                check=models.Q(calificacion__gte=1, calificacion__lte=5),
+                name="calificacion_range_reseñas"
+            )
         ]
         unique_together = ('usuario_id', 'propiedad_id')
 

@@ -33,7 +33,8 @@ class Reserva(models.Model):
     huespedes = models.IntegerField(default=1)
     estado = models.CharField(max_length=20, choices=ESTADOS)
     fecha_reserva = models.DateField(auto_now_add=True)
-
+    precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
+    
     def __str__(self):
         return f"Reserva de {self.cliente_id} en {self.propiedad_id}"
 
@@ -170,7 +171,7 @@ class HistorialActividad(models.Model):
         return f"Actividad de {self.usuario_id}"
 
 
-# Modelo de Feedback sobre la Plataforma
+# Modelo de Feedback
 class Feedback(models.Model):
     usuario_id = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateField(auto_now_add=True)
